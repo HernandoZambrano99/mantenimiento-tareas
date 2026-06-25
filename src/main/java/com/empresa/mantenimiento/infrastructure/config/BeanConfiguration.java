@@ -1,10 +1,13 @@
 package com.empresa.mantenimiento.infrastructure.config;
 
+import com.empresa.mantenimiento.domain.model.task.gateway.TaskOutputPort;
 import com.empresa.mantenimiento.domain.model.user.gateway.PasswordEncoderPort;
 import com.empresa.mantenimiento.domain.model.user.gateway.UserOutputPort;
 import com.empresa.mantenimiento.domain.usecase.AuthUseCase;
+import com.empresa.mantenimiento.domain.usecase.TaskUseCase;
 import com.empresa.mantenimiento.domain.usecase.UserUseCase;
 import com.empresa.mantenimiento.domain.usecase.input.AuthInputPort;
+import com.empresa.mantenimiento.domain.usecase.input.TaskInputPort;
 import com.empresa.mantenimiento.domain.usecase.input.UserInputPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,5 +32,11 @@ public class BeanConfiguration {
     public AuthInputPort authInputPort(UserOutputPort userOutputPort,
                                        PasswordEncoderPort passwordEncoderPort) {
         return new AuthUseCase(userOutputPort, passwordEncoderPort);
+    }
+
+    @Bean
+    public TaskInputPort taskInputPort(TaskOutputPort taskOutputPort,
+                                       UserOutputPort userOutputPort) {
+        return new TaskUseCase(taskOutputPort, userOutputPort);
     }
 }

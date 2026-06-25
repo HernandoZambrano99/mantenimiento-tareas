@@ -1,6 +1,7 @@
 package com.empresa.mantenimiento.infrastructure.entrypoint.rest;
 
 import com.empresa.mantenimiento.domain.exception.DomainConflictException;
+import com.empresa.mantenimiento.domain.exception.DomainForbiddenException;
 import com.empresa.mantenimiento.domain.exception.DomainNotFoundException;
 import com.empresa.mantenimiento.domain.exception.DomainUnauthorizedException;
 import com.empresa.mantenimiento.domain.exception.DomainValidationException;
@@ -41,6 +42,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DomainUnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(DomainUnauthorizedException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(DomainForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(DomainForbiddenException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(exception.getMessage()));
     }
 

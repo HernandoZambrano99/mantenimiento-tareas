@@ -47,6 +47,9 @@ public class SecurityConfiguration {
                         // User management — ADMIN only
                         .requestMatchers("/api/v1/users/**").hasRole(ROLE_ADMIN)
 
+                        // Tasks — any authenticated user; per-task ownership enforced in the domain
+                        .requestMatchers("/api/v1/tasks/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
