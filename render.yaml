@@ -1,0 +1,60 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# To deploy: push this repo to GitHub, then in Render dashboard pick
+# "New +" -> "Blueprint" and select the repo. Render reads this file, creates
+# the service, and prompts you for the secret values flagged `sync: false`.
+#
+# Database: this scaffold expects an external Postgres (e.g. Neon). DB_URL,
+# DB_USERNAME and DB_PASSWORD are wired through env vars below — paste the
+# values from your Neon dashboard at first deploy.
+services:
+  - type: web
+    name: mantenimiento
+    runtime: docker
+    plan: free                        # bump to `starter` or higher for production
+    region: oregon                    # change to ohio / frankfurt / singapore as needed
+    branch: main
+    dockerfilePath: ./docker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health/readiness
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # --- Database (Neon) ---------------------------------------------------
+      # JDBC URL. Convert Neon's psql connection string to JDBC by prepending
+      # `jdbc:` and appending `?sslmode=require&channel_binding=require`.
+      # Example:
+      #   jdbc:postgresql://ep-cool-darkness-1234.us-east-2.aws.neon.tech/mantenimiento?sslmode=require&channel_binding=require
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # --- JWT --------------------------------------------------------------
+      # Render generates a strong value the first time; rotating requires
+      # invalidating outstanding tokens.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: "3600000"
+      - key: JWT_REFRESH_EXPIRATION_MS
+        value: "86400000"
+
+      # --- Bootstrap admin --------------------------------------------------
+      # If ADMIN_PASSWORD is unset the app generates one on first boot and
+      # logs it once. Set this explicitly for production.
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # --- CORS -------------------------------------------------------------
+      # Comma-separated list of allowed origins (no trailing slash).
+      - key: CORS_ORIGINS
+        sync: false

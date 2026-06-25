@@ -1,0 +1,45 @@
+# Local development / testing docker-compose.
+# NOT a production configuration.
+# Usage:  docker compose -f docker/docker-compose.yml up --build
+services:
+  postgres:
+    image: postgres:17
+    container_name: mantenimiento-postgres
+    environment:
+      POSTGRES_DB: mantenimiento
+      POSTGRES_USER: postgres
+      # Local only. In production credentials come from a Secret.
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build:
+      # Build context MUST be repo root (where pom.xml lives).
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_VERSION: 0.0.1-SNAPSHOT
+    image: mantenimiento:local
+    container_name: mantenimiento-app
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:postgresql://postgres:5432/mantenimiento
+      DB_USERNAME: postgres
+      DB_PASSWORD: admin
+      CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
